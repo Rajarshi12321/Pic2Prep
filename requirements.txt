@@ -1,0 +1,23 @@
+# Core ML / DL
+torch
+transformers
+
+# Diffusion + attention maps
+diffusers
+# daam
+
+# Data + utilities
+pandas
+numpy
+scikit-learn
+matplotlib
+pillow
+
+# Hugging Face datasets
+datasets
+
+# UI
+streamlit
+
+# TITAN toolkit (used by data generation)
+# titan
