@@ -1,0 +1,22 @@
+{
+  "MODEL_ID": "Salesforce/blip-image-captioning-base",
+  "RECIPE_ANNOTATIONS_PATH": "/generated_dataset/annotations/annotations.json",
+  "RECIPE_IMAGES_DIR": "/generated_dataset/images",
+  "RECIPE_TEXT_FIELD": "ingredients",
+  "RECIPE_MODEL_SAVE_PATH": "generated_dataset/models/model_blip_recipe_200",
+  "INSTRUCTION_ANNOTATIONS_PATH": "generated_dataset/annotations/annotations.json",
+  "INSTRUCTION_IMAGES_DIR": "generated_dataset/images",
+  "INSTRUCTION_TEXT_FIELD": "instructions",
+  "INSTRUCTION_IMAGE_FIELD": "image",
+  "INSTRUCTION_MODEL_SAVE_PATH": "generated_dataset/models/model_blip_instructions_200",
+  "MAX_LENGTH": 2,
+  "OUTPUT_DIR": "./results",
+  "EVAL_STRATEGY": "epoch",
+  "TRAIN_BATCH_SIZE": 2,
+  "EVAL_BATCH_SIZE": 1,
+  "NUM_TRAIN_EPOCHS": 1,
+  "SAVE_STEPS": 10,
+  "SAVE_TOTAL_LIMIT": 1,
+  "REMOVE_UNUSED_COLUMNS": "False",
+  "PUSH_TO_HUB": "False"
+}

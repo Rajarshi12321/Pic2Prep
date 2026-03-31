@@ -43,10 +43,14 @@ python -m ensurepip --upgrade
 python -m pip install --upgrade pip setuptools wheel
 
 # -------------------------------
-# 5. Install PyTorch (CPU safe)
+# 5. Install PyTorch (GPU version compatible with CUDA 11.8)
 # -------------------------------
-echo "🔥 Installing PyTorch (CPU version)..."
-uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+
+echo "🔥 Installing PyTorch (GPU - CUDA 11.8 compatible)..."
+
+uv pip install torch torchvision torchaudio \
+  --index-url https://download.pytorch.org/whl/cu118
 
 # -------------------------------
 # 6. Install compatible dependencies
@@ -54,22 +58,22 @@ uv pip install torch --index-url https://download.pytorch.org/whl/cpu
 echo "📚 Installing core dependencies..."
 
 
-uv pip install --r requirements.txt || echo "⚠️ Some packages failed, continuing..."
+# uv pip install --r requirements.txt || echo "⚠️ Some packages failed, continuing..."
 
-# uv pip install \
-#     "transformers>=4.30" \
-#     "diffusers>=0.20" \
-#     "huggingface_hub<0.20" \
-#     "accelerate" \
-#     "safetensors" \
-#     "pillow" \
-#     "matplotlib" \
-#     "scikit-learn" \
-#     "pandas" \
-#     "numpy" \
-#     "datasets" \
-#     "streamlit" \
-#     "python-dotenv"
+uv pip install \
+    "transformers>=4.30" \
+    "diffusers>=0.20" \
+    "huggingface_hub<0.20" \
+    "accelerate" \
+    "safetensors" \
+    "pillow" \
+    "matplotlib" \
+    "scikit-learn" \
+    "pandas" \
+    "numpy" \
+    "datasets" \
+    "streamlit" \
+    "python-dotenv"
 
 # -------------------------------
 # 7. Install DAAM (from GitHub)

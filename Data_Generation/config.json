@@ -1,0 +1,9 @@
+{
+  "MODEL_ID": "Manojb/stable-diffusion-2-base",
+  "LOCAL_ONLY": "0",
+  "DISABLE_SAFETY": "1",
+  "GEN_SIZE": "384",
+  "NUM_INFERENCE_STEPS": "25",
+  "NUM_IMAGES_PER_PROMPT": "5",
+  "MAX_PROMPTS": "2"
+}

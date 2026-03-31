@@ -5,14 +5,55 @@ from datasets import Dataset
 import os
 import shutil
 import json
+import warnings
+
+# Config loading
+CONFIG_PATH = os.getenv("CONFIG_PATH", os.path.join(os.path.dirname(__file__), "config.json"))
+config = {}
+if os.path.exists(CONFIG_PATH):
+    with open(CONFIG_PATH, "r") as f:
+        config = json.load(f) or {}
+
+
+def get_cfg(key, default=None):
+    return os.getenv(key, config.get(key, default))
+
+
+# Suppress noisy torch.load FutureWarning from transformers
+warnings.filterwarnings(
+    "ignore",
+    message=r".*weights_only=False.*",
+    category=FutureWarning,
+)
+
+MODEL_ID = get_cfg("MODEL_ID", "Salesforce/blip-image-captioning-base")
+print(f"[config] MODEL_ID: {MODEL_ID}")
 
 # Load the BLIP processor and model
-processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
-model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+print("[model] Loading BLIP processor...")
+processor = BlipProcessor.from_pretrained(MODEL_ID)
+print("[model] Loading BLIP model...")
+model = BlipForConditionalGeneration.from_pretrained(MODEL_ID)
 
 # Load the annotations
-with open('/work/kaippilr/food_ingredient_detection/dataset_for_blip_instruction_200/annotations.json', 'r') as f:
+ANNOTATIONS_PATH = get_cfg(
+    "INSTRUCTION_ANNOTATIONS_PATH",
+    "/model/food_ingredient_detection/dataset_for_blip_instruction_200/annotations.json",
+)
+IMAGES_DIR = get_cfg(
+    "INSTRUCTION_IMAGES_DIR",
+    "/model/food_ingredient_detection/dataset_for_blip_instruction_200/images",
+)
+TEXT_FIELD = get_cfg("INSTRUCTION_TEXT_FIELD", "instructions")
+IMAGE_FIELD = get_cfg("INSTRUCTION_IMAGE_FIELD", "image")
+print(f"[data] Annotations: {ANNOTATIONS_PATH}")
+print(f"[data] Images dir: {IMAGES_DIR}")
+print(f"[data] Text field: {TEXT_FIELD}")
+print(f"[data] Image field: {IMAGE_FIELD}")
+
+with open(ANNOTATIONS_PATH, "r") as f:
     annotations = json.load(f)
+print(f"[data] Loaded annotations: {len(annotations)}")
 
 # Prepare the dataset dictionary
 data = {
@@ -22,13 +63,14 @@ data = {
 
 # Convert annotations to dataset format
 for item in annotations:
-    image_path = os.path.join('/work/kaippilr/food_ingredient_detection/dataset_for_blip_instruction_200/images', item['image'])
-    instructions = item['instructions']
+    image_path = os.path.join(IMAGES_DIR, item["file_name"])
+    instructions = item["prompt"]
     data["image_path"].append(image_path)
     data["instructions"].append(instructions)
 
 # Convert to HuggingFace Dataset
 dataset = Dataset.from_dict(data)
+print(f"[data] Dataset size: {len(dataset)}")
 
 def tokenize_function(examples):
     # Load and preprocess images
@@ -39,12 +81,13 @@ def tokenize_function(examples):
 
 
     inputs = processor(
-    images=images, 
-    text=examples['instructions'], 
-    return_tensors='pt', 
-    padding="max_length",  # Pad sequences to max length
-    truncation=True,       # Truncate sequences that are longer than max_length
-    max_length=64)         # Set a reasonable max length (adjust as needed)
+        images=images,
+        text=examples["instructions"],
+        return_tensors="pt",
+        padding="max_length",  # Pad sequences to max length
+        truncation=True,  # Truncate sequences that are longer than max_length
+        max_length=int(get_cfg("MAX_LENGTH", 64)),
+    )
 
     # Setting labels for the decoder, which is the tokenized ingredient text
     inputs['labels'] = inputs.input_ids.clone()
@@ -52,23 +95,26 @@ def tokenize_function(examples):
     return inputs
 
 # Apply the tokenize function to the dataset
+print("[data] Tokenizing dataset...")
 tokenized_dataset = dataset.map(tokenize_function, batched=True)
 
 # Remove unnecessary columns
 tokenized_dataset = tokenized_dataset.remove_columns(["image_path", "instructions"])
+print(f"[data] Tokenized dataset columns: {tokenized_dataset.column_names}")
 
 # Define the training arguments
 training_args = TrainingArguments(
-    output_dir="./results",
-    evaluation_strategy="epoch",
-    per_device_train_batch_size=4,
-    per_device_eval_batch_size=4,
-    num_train_epochs=3,
-    save_steps=10_000,
-    save_total_limit=2,
-    remove_unused_columns=False,
-    push_to_hub=False,
+    output_dir=get_cfg("OUTPUT_DIR", "./results"),
+    evaluation_strategy=get_cfg("EVAL_STRATEGY", "epoch"),
+    per_device_train_batch_size=int(get_cfg("TRAIN_BATCH_SIZE", 4)),
+    per_device_eval_batch_size=int(get_cfg("EVAL_BATCH_SIZE", 4)),
+    num_train_epochs=float(get_cfg("NUM_TRAIN_EPOCHS", 3)),
+    save_steps=int(get_cfg("SAVE_STEPS", 10000)),
+    save_total_limit=int(get_cfg("SAVE_TOTAL_LIMIT", 2)),
+    remove_unused_columns=str(get_cfg("REMOVE_UNUSED_COLUMNS", "False")) == "True",
+    push_to_hub=str(get_cfg("PUSH_TO_HUB", "False")) == "True",
 )
+print("[train] TrainingArguments initialized")
 
 # Create a Trainer instance
 trainer = Trainer(
@@ -77,11 +123,19 @@ trainer = Trainer(
     train_dataset=tokenized_dataset,
     eval_dataset=tokenized_dataset,
 )
+print("[train] Trainer initialized")
 
 # Train the model
+print("[train] Starting training...")
 trainer.train()
+print("[train] Training complete")
 
 # Save the trained model and processor
-model_save_path = "/work/kaippilr/food_ingredient_detection/model_blip_instructions_200"
+model_save_path = get_cfg(
+    "INSTRUCTION_MODEL_SAVE_PATH",
+    "/model/food_ingredient_detection/model_blip_instructions_200",
+)
+print(f"[save] Saving model to: {model_save_path}")
 model.save_pretrained(model_save_path)
 processor.save_pretrained(model_save_path)
+print("[save] Save complete")

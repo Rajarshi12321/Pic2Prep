@@ -1,10 +1,15 @@
 # Core ML / DL
+
+--index-url https://download.pytorch.org/whl/cu121 --upgrade --force-reinstall torch
+
 torch
 transformers
 
 # Diffusion + attention maps
 diffusers
-# daam
+git+https://github.com/castorini/daam.git # daam
+huggingface-hub==0.19.4
+
 
 # Data + utilities
 pandas
@@ -12,6 +17,8 @@ numpy
 scikit-learn
 matplotlib
 pillow
+tqdm
+python-dotenv
 
 # Hugging Face datasets
 datasets
