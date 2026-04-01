@@ -1,7 +1,7 @@
 {
   "MODEL_ID": "Salesforce/blip-image-captioning-base",
-  "RECIPE_ANNOTATIONS_PATH": "/generated_dataset/annotations/annotations.json",
-  "RECIPE_IMAGES_DIR": "/generated_dataset/images",
+  "RECIPE_ANNOTATIONS_PATH": "generated_dataset/annotations/annotations.json",
+  "RECIPE_IMAGES_DIR": "generated_dataset/images",
   "RECIPE_TEXT_FIELD": "ingredients",
   "RECIPE_MODEL_SAVE_PATH": "generated_dataset/models/model_blip_recipe_200",
   "INSTRUCTION_ANNOTATIONS_PATH": "generated_dataset/annotations/annotations.json",

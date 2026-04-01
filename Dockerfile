@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy and install Python deps first for better layer caching
 COPY requirements.txt /app/requirements.txt
 RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install --no-cache-dir -r /app/requirements.txt
+    python3 -m pip install --no-cache-dir --upgrade --force-reinstall -r /app/requirements.txt
 
 # Copy the project
 COPY . /app
