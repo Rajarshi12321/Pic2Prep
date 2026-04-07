@@ -17,100 +17,6 @@ from PIL import Image
 # Read the CSV file to get the prompts
 import pandas as pd
 
-
-import os
-import json
-
-class TITANDataset:
-    def __init__(self, base_dir="generated_dataset"):
-        self.base_dir = base_dir
-        
-        # Directories
-        self.image_dir = os.path.join(base_dir, "images")
-        self.annotation_dir = os.path.join(base_dir, "annotations")
-        self.caption_dir = os.path.join(base_dir, "captions")
-        
-        os.makedirs(self.image_dir, exist_ok=True)
-        os.makedirs(self.annotation_dir, exist_ok=True)
-        os.makedirs(self.caption_dir, exist_ok=True)
-
-        # Internal storage
-        self.annotations = []
-        self.captions = []
-        self.images = []
-
-    def annotate(self, image, filename, heatmap, processed_prompt):
-        """
-        Replaces TITAN's annotation logic.
-        Saves:
-        - basic bounding box (from heatmap)
-        - caption (prompt)
-        """
-
-        prompt, _, _ = processed_prompt
-
-        # Convert heatmap → numpy
-        try:
-            heat = heatmap.numpy()
-        except:
-            heat = None
-
-        bbox = None
-
-        if heat is not None:
-            import numpy as np
-
-            # Normalize heatmap
-            heat = heat / (heat.max() + 1e-8)
-
-            # Threshold to get important region
-            mask = heat > 0.5
-
-            if mask.any():
-                coords = np.argwhere(mask)
-                y_min, x_min = coords.min(axis=0)
-                y_max, x_max = coords.max(axis=0)
-
-                bbox = [int(x_min), int(y_min), int(x_max), int(y_max)]
-
-        # Annotation JSON
-        annotation = {
-            "file_name": filename,
-            "bbox": bbox,
-            "prompt": prompt
-        }
-
-        # Caption JSON
-        caption = {
-            "file_name": filename,
-            "caption": prompt
-        }
-
-        self.annotations.append(annotation)
-        self.captions.append(caption)
-        self.images.append(filename)
-
-    def save(self):
-        """Save annotations + captions to disk"""
-
-        # Save annotations
-        if self.annotations:
-            ann_path = os.path.join(self.annotation_dir, "annotations.json")
-            with open(ann_path, "w") as f:
-                json.dump(self.annotations, f, indent=4)
-
-        # Save captions
-        if self.captions:
-            cap_path = os.path.join(self.caption_dir, "captions.json")
-            with open(cap_path, "w") as f:
-                json.dump(self.captions, f, indent=4)
-
-    def clear(self):
-        """Clear memory (like TITAN batching)"""
-        self.annotations = []
-        self.captions = []
-        self.images = []
-        
 # Load prompts from the CSV file
 csv_file_path = '/work/kaippilr/food_ingredient_detection/recipes_1000.csv'
 df = pd.read_csv(csv_file_path)
@@ -188,9 +94,9 @@ except KeyboardInterrupt:  # In case of KeyboardInterrupt save the annotations a
     titan_dataset.save()
     titan_dataset.clear()
 
-# # Merge annotation and caption files
-# merge_annotation_files()
-# merge_caption_files()
+# Merge annotation and caption files
+merge_annotation_files()
+merge_caption_files()
 
 # Define the new base directory for the restructured folders
 NEW_BASE_DIR = 'New_Generated_Train'
@@ -239,4 +145,3 @@ copy_files_to_new_structure(titan_dataset.caption_dir, NEW_CAPTIONS_DIR, 'object
 
 # Interactive Annotation Visualizer
 #titan_visualizer.visualize_annotation(image_id=1)
-

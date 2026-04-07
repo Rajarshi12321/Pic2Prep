@@ -120,12 +120,17 @@ class SimpleDataset:
         - caption (prompt)
         """
         prompt, _, _ = processed_prompt
+        
+        print(f"[annotate] Annotating image {filename} for prompt: {prompt}")
+        print(f"[annotate] Heatmap type: {type(heatmap)}, shape: {getattr(heatmap, 'shape', 'N/A')}")
 
         # Convert heatmap → numpy
         try:
             heat = heatmap.numpy()
-        except Exception:
+            print(f"[annotate] Heatmap converted to numpy: shape {heat.shape}")
+        except Exception as e:
             heat = None
+            print(f"[annotate] Failed to convert heatmap to numpy: {e}")
 
         bbox = None
 
@@ -318,6 +323,8 @@ try:
                         width=GEN_SIZE,
                     ).images[0]
                     global_heat_map = trc.compute_global_heat_map()
+                print(f"[daam] DAAM tracing completed successfully for prompt {i}, image {j}")
+                print(f"[daam] Heatmap type: {type(global_heat_map)}, shape: {global_heat_map.shape if hasattr(global_heat_map, 'shape') else 'N/A'}")
             except RuntimeError as e:
                 msg = str(e).lower()
                 if "cuda" in msg or "out of memory" in msg or "memory allocation" in msg:

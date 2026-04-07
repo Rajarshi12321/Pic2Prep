@@ -23,9 +23,9 @@ bert_model = BertModel.from_pretrained(bert_model_name)
 def get_bert_embeddings(text):
     inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
     with torch.no_grad():
-	outputs = bert_model(**inputs)
-    embeddings = outputs.last_hidden_state.mean(dim=1)
-    return embeddings.numpy()
+        outputs = bert_model(**inputs)
+        embeddings = outputs.last_hidden_state.mean(dim=1)
+        return embeddings.numpy()
 
 def cosine_similarity_score(predicted_instructions, actual_instructions):
     pred_embeddings = np.mean([get_bert_embeddings(instr)[0] for instr in predicted_instructions], axis=0)

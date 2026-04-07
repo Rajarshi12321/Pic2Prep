@@ -52,8 +52,8 @@ data = {
 
 # Convert annotations to dataset format
 for item in annotations:
-    image_path = os.path.join(IMAGES_DIR, item["image"])
-    ingredients = item[TEXT_FIELD]
+    image_path = os.path.join(IMAGES_DIR, item["file_name"])
+    ingredients = item["prompt"]
     data["image_path"].append(image_path)
     data["ingredients"].append(ingredients)
 

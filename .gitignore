@@ -1,3 +1,6 @@
 .idea/
 generated_dataset/
 .env
+
+*.json
+generated_dataset/models 
